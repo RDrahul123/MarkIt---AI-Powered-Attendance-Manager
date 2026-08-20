@@ -133,9 +133,10 @@ async def seed_endpoint():
         return {"message": "Seed data created successfully!"}
 
 
-dist_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
-if os.path.isdir(dist_path):
-    app.mount("/", StaticFiles(directory=dist_path, html=True), name="static")
+if not os.getenv("VERCEL"):
+    dist_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+    if os.path.isdir(dist_path) and os.path.isfile(os.path.join(dist_path, "index.html")):
+        app.mount("/", StaticFiles(directory=dist_path, html=True), name="static")
 
 
 async def seed_data():
