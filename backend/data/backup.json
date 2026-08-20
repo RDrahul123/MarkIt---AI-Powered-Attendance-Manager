@@ -1,0 +1,325 @@
+{
+  "backup": true,
+  "entities": {
+    "students": [
+      {
+        "id": 1,
+        "roll_no": "2025001",
+        "name": "Aarav Sharma",
+        "email": "aarav@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      },
+      {
+        "id": 2,
+        "roll_no": "2025002",
+        "name": "Priya Patel",
+        "email": "priya@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      },
+      {
+        "id": 3,
+        "roll_no": "2025003",
+        "name": "Rohan Gupta",
+        "email": "rohan@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      },
+      {
+        "id": 4,
+        "roll_no": "2025004",
+        "name": "Sneha Reddy",
+        "email": "sneha@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      },
+      {
+        "id": 5,
+        "roll_no": "2025005",
+        "name": "Vikram Singh",
+        "email": "vikram@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      },
+      {
+        "id": 6,
+        "roll_no": "2025006",
+        "name": "Ananya Nair",
+        "email": "ananya@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      },
+      {
+        "id": 7,
+        "roll_no": "2025007",
+        "name": "Karthik Menon",
+        "email": "karthik@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      },
+      {
+        "id": 8,
+        "roll_no": "2025008",
+        "name": "Meera Joshi",
+        "email": "meera@edu.in",
+        "section_id": 1,
+        "academic_year_id": 1
+      }
+    ],
+    "sections": [
+      {
+        "id": 1,
+        "name": "Section A",
+        "academic_year_id": 1
+      }
+    ],
+    "subjects": [
+      {
+        "id": 1,
+        "code": "CS101",
+        "name": "Data Structures",
+        "section_id": 1
+      },
+      {
+        "id": 2,
+        "code": "CS102",
+        "name": "Operating Systems",
+        "section_id": 1
+      },
+      {
+        "id": 3,
+        "code": "MA201",
+        "name": "Linear Algebra",
+        "section_id": 1
+      }
+    ],
+    "attendance": [
+      {
+        "id": 1,
+        "student_id": 1,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373806",
+        "updated_at": "2026-08-20 18:35:08.373813"
+      },
+      {
+        "id": 2,
+        "student_id": 2,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "absent",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373817",
+        "updated_at": "2026-08-20 18:35:08.373819"
+      },
+      {
+        "id": 3,
+        "student_id": 3,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "late",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373822",
+        "updated_at": "2026-08-20 18:35:08.373824"
+      },
+      {
+        "id": 4,
+        "student_id": 4,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373826",
+        "updated_at": "2026-08-20 18:35:08.373828"
+      },
+      {
+        "id": 5,
+        "student_id": 5,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373831",
+        "updated_at": "2026-08-20 18:35:08.373833"
+      },
+      {
+        "id": 6,
+        "student_id": 6,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "excused",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373835",
+        "updated_at": "2026-08-20 18:35:08.373837"
+      },
+      {
+        "id": 7,
+        "student_id": 7,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "late",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373839",
+        "updated_at": "2026-08-20 18:35:08.373842"
+      },
+      {
+        "id": 8,
+        "student_id": 8,
+        "subject_id": 1,
+        "date": "2025-08-01",
+        "status": "absent",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373844",
+        "updated_at": "2026-08-20 18:35:08.373846"
+      },
+      {
+        "id": 9,
+        "student_id": 1,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373849",
+        "updated_at": "2026-08-20 18:35:08.373851"
+      },
+      {
+        "id": 10,
+        "student_id": 2,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373854",
+        "updated_at": "2026-08-20 18:35:08.373856"
+      },
+      {
+        "id": 11,
+        "student_id": 3,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373858",
+        "updated_at": "2026-08-20 18:35:08.373860"
+      },
+      {
+        "id": 12,
+        "student_id": 4,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "excused",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373862",
+        "updated_at": "2026-08-20 18:35:08.373864"
+      },
+      {
+        "id": 13,
+        "student_id": 5,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "excused",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373873",
+        "updated_at": "2026-08-20 18:35:08.373875"
+      },
+      {
+        "id": 14,
+        "student_id": 6,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373877",
+        "updated_at": "2026-08-20 18:35:08.373879"
+      },
+      {
+        "id": 15,
+        "student_id": 7,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373882",
+        "updated_at": "2026-08-20 18:35:08.373884"
+      },
+      {
+        "id": 16,
+        "student_id": 8,
+        "subject_id": 1,
+        "date": "2025-08-04",
+        "status": "absent",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373886",
+        "updated_at": "2026-08-20 18:35:08.373888"
+      },
+      {
+        "id": 17,
+        "student_id": 1,
+        "subject_id": 1,
+        "date": "2025-08-05",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373891",
+        "updated_at": "2026-08-20 18:35:08.373893"
+      },
+      {
+        "id": 18,
+        "student_id": 2,
+        "subject_id": 1,
+        "date": "2025-08-05",
+        "status": "absent",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373895",
+        "updated_at": "2026-08-20 18:35:08.373897"
+      },
+      {
+        "id": 19,
+        "student_id": 3,
+        "subject_id": 1,
+        "date": "2025-08-05",
+        "status": "late",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373900",
+        "updated_at": "2026-08-20 18:35:08.373902"
+      },
+      {
+        "id": 20,
+        "student_id": 4,
+        "subject_id": 1,
+        "date": "2025-08-05",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373904",
+        "updated_at": "2026-08-20 18:35:08.373906"
+      },
+      {
+        "id": 21,
+        "student_id": 5,
+        "subject_id": 1,
+        "date": "2025-08-05",
+        "status": "absent",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373909",
+        "updated_at": "2026-08-20 18:35:08.373911"
+      },
+      {
+        "id": 22,
+        "student_id": 6,
+        "subject_id": 1,
+        "date": "2025-08-05",
+        "status": "present",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373913",
+        "updated_at": "2026-08-20 18:35:08.373915"
+      },
+      {
+        "id": 23,
+        "student_id": 7,
+        "subject_id": 1,
+        "date": "2025-08-05",
+        "status": "excused",
+        "marked_by": 1,
+        "created_at": "2026-08-20 18:35:08.373

@@ -17,6 +17,7 @@ async def list_students(
     section_id: Optional[int] = Query(None),
     academic_year_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     q = select(models.Student)
     if section_id is not None:
@@ -28,7 +29,11 @@ async def list_students(
 
 
 @router.get("/{student_id}", response_model=schemas.StudentRead)
-async def get_student(student_id: int, db: AsyncSession = Depends(get_db)):
+async def get_student(
+    student_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
+):
     result = await db.execute(select(models.Student).where(models.Student.id == student_id))
     student = result.scalar_one_or_none()
     if not student:
@@ -37,7 +42,11 @@ async def get_student(student_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/", response_model=schemas.StudentRead)
-async def create_student(payload: schemas.StudentCreate, db: AsyncSession = Depends(get_db)):
+async def create_student(
+    payload: schemas.StudentCreate,
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
+):
     result = await db.execute(select(models.Section).where(models.Section.id == payload.section_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Section not found")
@@ -51,33 +60,43 @@ async def create_student(payload: schemas.StudentCreate, db: AsyncSession = Depe
     db.add(student)
     await db.commit()
     await db.refresh(student)
-    await utils.audit_log(db, None, "create", "student", student.id, payload.model_dump())
+    await utils.audit_log(db, user.id, "create", "student", student.id, payload.model_dump())
     return student
 
 
 @router.put("/{student_id}", response_model=schemas.StudentRead)
 async def update_student(
-    student_id: int, payload: schemas.StudentCreate, db: AsyncSession = Depends(get_db)
+    student_id: int,
+    payload: schemas.StudentCreate,
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     result = await db.execute(select(models.Student).where(models.Student.id == student_id))
     student = result.scalar_one_or_none()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
+    old_data = {c.name: getattr(student, c.name) for c in student.__table__.columns}
     for k, v in payload.model_dump().items():
         setattr(student, k, v)
     await db.commit()
     await db.refresh(student)
+    await utils.audit_log(db, user.id, "update", "student", student.id, {"old": old_data, "new": payload.model_dump()})
     return student
 
 
 @router.delete("/{student_id}")
-async def delete_student(student_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_student(
+    student_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
+):
     result = await db.execute(select(models.Student).where(models.Student.id == student_id))
     student = result.scalar_one_or_none()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     await db.delete(student)
     await db.commit()
+    await utils.audit_log(db, user.id, "delete", "student", student_id, {"roll_no": student.roll_no, "name": student.name})
     return {"detail": "Student deleted"}
 
 
@@ -87,6 +106,7 @@ async def import_preview(
     academic_year_id: int = Query(...),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     content = await file.read()
     rows: list[dict] = []
@@ -135,6 +155,7 @@ async def import_confirm(
     academic_year_id: int = Query(...),
     students: list[schemas.StudentBulkItem] = [],
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     result = await db.execute(select(models.Section).where(models.Section.id == section_id))
     if not result.scalar_one_or_none():
@@ -157,7 +178,7 @@ async def import_confirm(
         db.add(student)
         created += 1
     await db.commit()
-    await utils.audit_log(db, None, "bulk_import", "student", None, {"count": created})
+    await utils.audit_log(db, user.id, "import", "student", None, {"count": created, "section_id": section_id})
     return {"detail": f"Imported {created} students"}
 
 
@@ -167,10 +188,11 @@ class BulkImportRequest(BaseModel):
     academic_year_id: int
 
 
-@router.post("/import")
+@router.post("/import", response_model=list[schemas.StudentRead])
 async def bulk_import(
     payload: BulkImportRequest,
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     result = await db.execute(select(models.Section).where(models.Section.id == payload.section_id))
     if not result.scalar_one_or_none():
@@ -181,7 +203,7 @@ async def bulk_import(
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Academic year not found")
 
-    created = 0
+    created_students: list[models.Student] = []
     for s in payload.students:
         student = models.Student(
             roll_no=s.roll_no,
@@ -191,7 +213,7 @@ async def bulk_import(
             academic_year_id=payload.academic_year_id,
         )
         db.add(student)
-        created += 1
+        created_students.append(student)
     await db.commit()
-    await utils.audit_log(db, None, "bulk_import", "student", None, {"count": created})
-    return {"detail": f"Imported {created} students"}
+    await utils.audit_log(db, user.id, "import", "student", None, {"count": len(created_students), "section_id": payload.section_id})
+    return created_students

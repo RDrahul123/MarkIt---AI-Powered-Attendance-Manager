@@ -5,7 +5,7 @@ import { useAppStore } from "@/store/appStore";
 import { useApi } from "@/hooks/useApi";
 import { useNavigate } from "react-router-dom";
 import type { Section, Subject, AcademicYear } from "@/types";
-import { cn } from "@/lib/utils";
+
 
 interface HeaderProps {
   onMenuToggle: () => void;

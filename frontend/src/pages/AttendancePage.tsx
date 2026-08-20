@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
-import { Save, CheckCircle } from "lucide-react";
+import { Save, CheckCircle, Wifi, WifiOff } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
 import { useAppStore } from "@/store/appStore";
 import { useToast } from "@/components/ui/Toast";
@@ -30,6 +30,8 @@ const statusLabels: Record<AttendanceStatus, string> = {
 };
 
 const statuses: AttendanceStatus[] = ["present", "absent", "late", "excused"];
+const OFFLINE_QUEUE_KEY = "markit-attendance-offline";
+const AUTO_SAVE_INTERVAL_KEY = "markit-settings";
 
 export default function AttendancePage() {
   const { apiFetch } = useApi();
@@ -42,6 +44,9 @@ export default function AttendancePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [hasUnsaved, setHasUnsaved] = useState(false);
+  const [autoSaveInterval, setAutoSaveInterval] = useState(5);
 
   const fetchData = useCallback(async () => {
     if (!selectedSection || !selectedSubject) {
@@ -74,16 +79,127 @@ export default function AttendancePage() {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    const settings = localStorage.getItem(AUTO_SAVE_INTERVAL_KEY);
+    if (settings) {
+      try {
+        const s = JSON.parse(settings);
+        setAutoSaveInterval(s.autoSaveInterval || 5);
+      } catch { }
+    }
+
+    const goOnline = () => {
+      setIsOnline(true);
+      processOfflineQueue();
+    };
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+
+  const processOfflineQueue = useCallback(async () => {
+    const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]");
+    if (queue.length === 0) return;
+
+    for (const item of queue) {
+      try {
+        await apiFetch("/api/attendance/bulk", {
+          method: "POST",
+          body: {
+            marks: item.marks.map((m: any) => ({
+              student_id: m.student_id,
+              subject_id: m.subject_id,
+              date: m.date,
+              status: m.status,
+            })),
+          },
+        });
+      } catch {
+        return;
+      }
+    }
+    localStorage.removeItem(OFFLINE_QUEUE_KEY);
+    addToast("Offline attendance data synced successfully", "success");
+  }, [apiFetch, addToast]);
+
+  useEffect(() => {
+    if (!hasUnsaved) return;
+    const interval = setInterval(() => {
+      if (!isOnline || !selectedSubject) {
+        const marked = attendance.filter((a) => a.status);
+        if (marked.length > 0) {
+          const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]");
+          queue.push({
+            date,
+            subject_id: selectedSubject,
+            marks: marked.map((a) => ({
+              student_id: a.student_id,
+              subject_id: selectedSubject,
+              date,
+              status: a.status!,
+            })),
+            timestamp: Date.now(),
+          });
+          localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue.slice(0, 50)));
+          setHasUnsaved(false);
+          addToast("Saved locally (offline mode)", "info");
+        }
+        return;
+      }
+      const marked = attendance.filter((a) => a.status);
+      if (marked.length > 0) {
+        apiFetch("/api/attendance/bulk", {
+          method: "POST",
+          body: {
+            marks: marked.map((a) => ({
+              student_id: a.student_id,
+              subject_id: selectedSubject,
+              date,
+              status: a.status,
+            })),
+          },
+        }).then(() => {
+          setAutoSaved(true);
+          setTimeout(() => setAutoSaved(false), 3000);
+          setHasUnsaved(false);
+        }).catch(() => {
+          const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]");
+          queue.push({
+            date,
+            subject_id: selectedSubject,
+            marks: marked.map((a) => ({
+              student_id: a.student_id,
+              subject_id: selectedSubject,
+              date,
+              status: a.status!,
+            })),
+            timestamp: Date.now(),
+          });
+          localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue.slice(0, 50)));
+          setHasUnsaved(false);
+          addToast("Saved offline, will sync when online", "info");
+        });
+      }
+    }, autoSaveInterval * 1000);
+    return () => clearInterval(interval);
+  }, [hasUnsaved, isOnline, selectedSubject, attendance, autoSaveInterval]);
+
   const setStatus = (studentId: number, status: AttendanceStatus) => {
     setAttendance((prev) =>
       prev.map((a) => (a.student_id === studentId ? { ...a, status } : a))
     );
     setAutoSaved(false);
+    setHasUnsaved(true);
   };
 
   const markAllPresent = () => {
     setAttendance((prev) => prev.map((a) => ({ ...a, status: "present" as AttendanceStatus })));
     setAutoSaved(false);
+    setHasUnsaved(true);
   };
 
   const handleSave = async () => {
@@ -94,6 +210,27 @@ export default function AttendancePage() {
     const unmarked = attendance.filter((a) => !a.status);
     if (unmarked.length > 0) {
       addToast(`${unmarked.length} students have not been marked`, "error");
+      return;
+    }
+
+    if (!isOnline) {
+      const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]");
+      queue.push({
+        date,
+        subject_id: selectedSubject,
+        marks: attendance.map((a) => ({
+          student_id: a.student_id,
+          subject_id: selectedSubject,
+          date,
+          status: a.status!,
+        })),
+        timestamp: Date.now(),
+      });
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue.slice(0, 50)));
+      addToast("Saved offline, will sync when online", "success");
+      setAutoSaved(true);
+      setTimeout(() => setAutoSaved(false), 3000);
+      setHasUnsaved(false);
       return;
     }
 
@@ -113,6 +250,7 @@ export default function AttendancePage() {
       addToast("Attendance saved successfully", "success");
       setAutoSaved(true);
       setTimeout(() => setAutoSaved(false), 3000);
+      setHasUnsaved(false);
     } catch (err: any) {
       addToast(err.message || "Failed to save attendance", "error");
     } finally {
@@ -144,7 +282,17 @@ export default function AttendancePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Mark Attendance</h2>
-        <div className="flex items-center gap-3">
+         <div className="flex items-center gap-3">
+          {!isOnline && (
+            <span className="flex items-center gap-1 text-sm text-orange-600">
+              <WifiOff className="h-4 w-4" /> Offline mode
+            </span>
+          )}
+          {isOnline && hasUnsaved && (
+            <span className="flex items-center gap-1 text-sm text-blue-600">
+              <Wifi className="h-4 w-4" /> Auto-saving in {autoSaveInterval}s
+            </span>
+          )}
           {autoSaved && (
             <span className="flex items-center gap-1 text-sm text-green-600">
               <CheckCircle className="h-4 w-4" /> Saved

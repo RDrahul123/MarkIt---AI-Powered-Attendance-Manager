@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, X } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useApi } from "@/hooks/useApi";
 import { useAppStore } from "@/store/appStore";
@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Select } from "@/components/ui/Select";
-import { Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/lib/utils";
 
 interface ParsedRow {
@@ -25,8 +24,6 @@ interface ValidationError {
   field: string;
   message: string;
 }
-
-const COLUMN_MAP_OPTIONS = ["name", "roll_no", "email", "skip"];
 
 export default function ImportPage() {
   const { apiFetch } = useApi();

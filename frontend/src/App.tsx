@@ -12,6 +12,7 @@ import ExportPage from "@/pages/ExportPage";
 import SectionManagementPage from "@/pages/SectionManagementPage";
 import AIAssistantPage from "@/pages/AIAssistantPage";
 import AuditLogPage from "@/pages/AuditLogPage";
+import SettingsPage from "@/pages/SettingsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +51,7 @@ export default function App() {
               <Route path="/sections" element={<SectionManagementPage />} />
               <Route path="/ai" element={<AIAssistantPage />} />
               <Route path="/audit" element={<AuditLogPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

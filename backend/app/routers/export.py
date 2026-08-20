@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from openpyxl import Workbook
@@ -9,9 +10,13 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 from app.database import get_db
-from app import models
+from app import models, utils
 
 router = APIRouter(prefix="/api/export", tags=["export"])
+
+
+class BackupRequest(BaseModel):
+    data: dict
 
 
 FILL_RED = PatternFill(start_color="FF6B6B", end_color="FF6B6B", fill_type="solid")
@@ -29,24 +34,26 @@ BORDER = Border(
 
 @router.get("/excel")
 async def export_excel(
-    section_id: int = Query(...),
-    subject_id: int = Query(...),
+    section_id: Optional[int] = Query(None),
+    subject_id: Optional[int] = Query(None),
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     students_result = await db.execute(
         select(models.Student)
-        .where(models.Student.section_id == section_id)
+        .where(models.Student.section_id == section_id if section_id else True)
         .order_by(models.Student.roll_no)
     )
     students = students_result.scalars().all()
 
-    att_q = (
-        select(models.Attendance)
-        .where(models.Attendance.subject_id == subject_id)
-        .order_by(models.Attendance.date)
-    )
+    att_q = select(models.Attendance).order_by(models.Attendance.date)
+    if section_id:
+        student_ids = select(models.Student.id).where(models.Student.section_id == section_id)
+        att_q = att_q.where(models.Attendance.student_id.in_(student_ids))
+    if subject_id:
+        att_q = att_q.where(models.Attendance.subject_id == subject_id)
     if start_date:
         att_q = att_q.where(models.Attendance.date >= start_date)
     if end_date:
@@ -55,10 +62,10 @@ async def export_excel(
     records_result = await db.execute(att_q)
     records = records_result.scalars().all()
 
-    subject_result = await db.execute(select(models.Subject).where(models.Subject.id == subject_id))
-    subject = subject_result.scalar_one_or_none()
-    section_result = await db.execute(select(models.Section).where(models.Section.id == section_id))
-    section = section_result.scalar_one_or_none()
+    subject_result = await db.execute(select(models.Subject).where(models.Subject.id == subject_id)) if subject_id else None
+    subject = subject_result.scalar_one_or_none() if subject_result else None
+    section_result = await db.execute(select(models.Section).where(models.Section.id == section_id)) if section_id else None
+    section = section_result.scalar_one_or_none() if section_result else None
 
     wb = Workbook()
 
@@ -181,3 +188,63 @@ async def export_excel(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.get("/backup")
+async def backup_data(
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
+):
+    def model_to_dict(m):
+        return {c.name: getattr(m, c.name) for c in m.__table__.columns}
+
+    entities = {}
+    for name, model in [
+        ("students", models.Student),
+        ("sections", models.Section),
+        ("subjects", models.Subject),
+        ("attendance", models.Attendance),
+        ("academic_years", models.AcademicYear),
+    ]:
+        rows = (await db.execute(select(model))).scalars().all()
+        entities[name] = [model_to_dict(r) for r in rows]
+
+    import json
+    data_bytes = json.dumps({"backup": True, "entities": entities}, default=str, indent=2).encode()
+    buf = BytesIO(data_bytes)
+    return StreamingResponse(
+        buf,
+        media_type="application/json",
+        headers={"Content-Disposition": "attachment; filename=markit-backup.json"},
+    )
+
+
+@router.post("/restore")
+async def restore_data(
+    payload: BackupRequest,
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
+):
+    data = payload.data
+    if not data.get("backup"):
+        raise HTTPException(status_code=400, detail="Invalid backup format")
+    entities = data.get("entities", {})
+    table_map = {
+        "students": models.Student.__table__,
+        "sections": models.Section.__table__,
+        "subjects": models.Subject.__table__,
+        "attendance": models.Attendance.__table__,
+        "academic_years": models.AcademicYear.__table__,
+    }
+    for table in table_map.values():
+        await db.execute(table.delete())
+    for entity_name, rows in entities.items():
+        table = table_map.get(entity_name)
+        if table is None:
+            continue
+        for row in rows:
+            filtered = {k: v for k, v in row.items() if k in table.columns}
+            await db.execute(table.insert().values(**filtered))
+    await db.commit()
+    await utils.audit_log(db, user.id, "restore", "backup", None, {"source": "manual"})
+    return {"detail": "Data restored successfully"}

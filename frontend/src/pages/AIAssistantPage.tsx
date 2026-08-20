@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, History, Trash2 } from "lucide-react";
+import { Send, Bot, User, Trash2 } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
 import { useAppStore } from "@/store/appStore";
-import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -37,7 +36,6 @@ const HISTORY_STORAGE = "markit-ai-history";
 export default function AIAssistantPage() {
   const { apiFetch } = useApi();
   const { selectedSection, selectedSubject } = useAppStore();
-  const { addToast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -55,7 +53,6 @@ export default function AIAssistantPage() {
       return [];
     }
   });
-  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -1,8 +1,8 @@
 import enum
-from datetime import datetime, date
+from datetime import datetime, timezone
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean, DateTime, Date,
-    ForeignKey, Enum, JSON, Text
+    ForeignKey, Enum, JSON, Text, func
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -30,7 +30,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), nullable=False, default=UserRole.teacher)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     audit_logs = relationship("AuditLog", back_populates="user")
     ai_prompts = relationship("AiPromptHistory", back_populates="user")
@@ -42,7 +42,7 @@ class AcademicYear(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True, nullable=False)
     is_active = Column(Boolean, default=False, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     sections = relationship("Section", back_populates="academic_year")
     students = relationship("Student", back_populates="academic_year")
@@ -124,8 +124,8 @@ class Attendance(Base):
     date = Column(Date, nullable=False)
     status = Column(Enum(AttendanceStatus), nullable=False)
     marked_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc), nullable=False)
 
     student = relationship("Student", back_populates="attendance_records")
     subject = relationship("Subject", back_populates="attendance_records")
@@ -141,7 +141,7 @@ class AuditLog(Base):
     entity_type = Column(String(50), nullable=True)
     entity_id = Column(Integer, nullable=True)
     details = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
 
     user = relationship("User", back_populates="audit_logs")
 
@@ -157,7 +157,7 @@ class AiPromptHistory(Base):
     response = Column(Text, nullable=True)
     provider = Column(String(50), nullable=False)
     model = Column(String(100), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
 
     user = relationship("User", back_populates="ai_prompts")
     section = relationship("Section", back_populates="ai_prompts")

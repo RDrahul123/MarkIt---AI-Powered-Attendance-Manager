@@ -4,9 +4,10 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { Heatmap } from "@/components/ui/Heatmap";
 import { useApi } from "@/hooks/useApi";
 import { useAppStore } from "@/store/appStore";
-import type { DashboardStats } from "@/types";
+import type { DashboardStats, HeatmapData as HeatmapDataType } from "@/types";
 
 interface TrendData {
   date: string;
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const [trends, setTrends] = useState<TrendData[]>([]);
   const [sectionData, setSectionData] = useState<SectionAttendance[]>([]);
   const [atRisk, setAtRisk] = useState<AtRiskStudent[]>([]);
+  const [heatmapData, setHeatmapData] = useState<HeatmapDataType["data"]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -48,11 +50,12 @@ export default function DashboardPage() {
       setLoading(true);
       setError("");
       try {
-        const [statsData, trendsData, sectionDataRes, atRiskData] = await Promise.all([
+        const [statsData, trendsData, sectionDataRes, atRiskData, heatmapRes] = await Promise.all([
           apiFetch<DashboardStats>("/api/dashboard/stats"),
           apiFetch<TrendData[]>("/api/dashboard/by-date"),
           apiFetch<any[]>("/api/dashboard/by-section"),
           apiFetch<AtRiskStudent[]>("/api/dashboard/at-risk"),
+          apiFetch<HeatmapDataType>("/api/dashboard/heatmap"),
         ]);
         setStats(statsData);
         setTrends(trendsData.map((t: any) => ({
@@ -69,6 +72,7 @@ export default function DashboardPage() {
           rate: s.percentage,
         })));
         setAtRisk(atRiskData);
+        setHeatmapData(heatmapRes?.data);
       } catch (err: any) {
         setError(err.message || "Failed to load dashboard");
       } finally {
@@ -76,7 +80,7 @@ export default function DashboardPage() {
       }
     };
     fetchDashboard();
-  }, [selectedAcademicYear]);
+  }, [selectedAcademicYear, apiFetch]);
 
   if (loading) return <Spinner size="lg" className="mt-20" />;
 
@@ -151,6 +155,16 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <Card title="Attendance Heatmap">
+        <div className="h-72">
+          {heatmapData ? (
+            <Heatmap data={heatmapData} />
+          ) : (
+            <p className="flex h-full items-center justify-center text-sm text-gray-500">Loading heatmap...</p>
+          )}
+        </div>
+      </Card>
 
       <Card title="At-Risk Students" description="Students with attendance below 75%">
         {atRisk.length > 0 ? (

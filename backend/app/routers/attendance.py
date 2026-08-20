@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +33,7 @@ async def mark_attendance(
 
     if existing_rec:
         existing_rec.status = payload.status
-        existing_rec.updated_at = datetime.utcnow()
+        existing_rec.updated_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(existing_rec)
         await utils.audit_log(
@@ -74,7 +74,7 @@ async def bulk_mark(
         existing_rec = existing.scalar_one_or_none()
         if existing_rec:
             existing_rec.status = m.status
-            existing_rec.updated_at = datetime.utcnow()
+            existing_rec.updated_at = datetime.now(timezone.utc)
             await db.refresh(existing_rec)
             results.append(existing_rec)
         else:
@@ -102,6 +102,7 @@ async def list_attendance(
     end_date: Optional[date] = Query(None),
     status: Optional[models.AttendanceStatus] = Query(None),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     q = select(models.Attendance)
     if subject_id is not None:
@@ -128,6 +129,7 @@ async def attendance_by_date(
     subject_id: int = Query(...),
     date_val: date = Query(..., alias="date"),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     result = await db.execute(
         select(models.Attendance)
@@ -143,6 +145,7 @@ async def student_summary(
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     students = await db.execute(
         select(models.Student).where(models.Student.section_id == section_id)

@@ -3,15 +3,27 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, case
 from app.database import get_db
-from app import models, schemas
+from app import models, schemas, utils
+
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
 @router.get("/stats", response_model=schemas.DashboardStats)
-async def overall_stats(db: AsyncSession = Depends(get_db)):
-    total_students = (await db.execute(select(func.count(models.Student.id)))).scalar() or 0
-    total_sections = (await db.execute(select(func.count(models.Section.id)))).scalar() or 0
+async def overall_stats(
+    academic_year_id: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
+):
+    student_q = select(func.count(models.Student.id))
+    if academic_year_id is not None:
+        student_q = student_q.where(models.Student.academic_year_id == academic_year_id)
+    total_students = (await db.execute(student_q)).scalar() or 0
+
+    section_q = select(func.count(models.Section.id))
+    if academic_year_id is not None:
+        section_q = section_q.where(models.Section.academic_year_id == academic_year_id)
+    total_sections = (await db.execute(section_q)).scalar() or 0
     total_subjects = (await db.execute(select(func.count(models.Subject.id)))).scalar() or 0
     total_att = (await db.execute(select(func.count(models.Attendance.id)))).scalar() or 0
 
@@ -42,6 +54,7 @@ async def attendance_by_date(
     subject_id: Optional[int] = Query(None),
     section_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     q = select(
         models.Attendance.date,
@@ -77,7 +90,10 @@ async def attendance_by_date(
 
 
 @router.get("/by-section")
-async def attendance_by_section(db: AsyncSession = Depends(get_db)):
+async def attendance_by_section(
+    db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
+):
     q = (
         select(
             models.Section.id,
@@ -162,6 +178,7 @@ async def heatmap_data(
     subject_id: Optional[int] = Query(None),
     section_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
+    user: models.User = Depends(utils.get_current_user),
 ):
     q = (
         select(

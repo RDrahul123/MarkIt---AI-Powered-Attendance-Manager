@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
-import { cn } from "@/lib/utils";
 import type { AcademicYear, Section, Subject } from "@/types";
 
 type EntityType = "year" | "section" | "subject";
@@ -72,7 +71,8 @@ export default function SectionManagementPage() {
   const toggleYear = (id: number) => {
     setExpandedYears((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -80,7 +80,8 @@ export default function SectionManagementPage() {
   const toggleSection = (id: number) => {
     setExpandedSections((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
