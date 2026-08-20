@@ -10,3 +10,4 @@ aiofiles
 httpx
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt
