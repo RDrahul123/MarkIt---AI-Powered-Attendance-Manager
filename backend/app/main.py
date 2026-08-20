@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Attendance Manager API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="MarkIt API", version="1.0.0", lifespan=lifespan)
 
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
@@ -61,7 +61,7 @@ async def seed_data():
 
         admin = models.User(
             username="admin",
-            email="admin@attendance.local",
+            email="admin@markit.local",
             password_hash=utils.hash_password("admin123"),
             role=models.UserRole.admin,
         )

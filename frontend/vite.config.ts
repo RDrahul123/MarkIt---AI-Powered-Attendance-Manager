@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico"],
       manifest: {
-        name: "AI-Powered Attendance Manager",
-        short_name: "Attendance",
+        name: "MarkIt - AI Powered Attendance Manager",
+        short_name: "MarkIt",
         description: "AI-powered attendance tracking with Excel import/export",
         theme_color: "#3b82f6",
         background_color: "#ffffff",

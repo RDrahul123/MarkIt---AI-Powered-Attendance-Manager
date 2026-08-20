@@ -31,8 +31,8 @@ const PROMPT_TEMPLATES = [
   "Predict end-term attendance",
 ];
 
-const API_KEY_STORAGE = "attendance-ai-api-key";
-const HISTORY_STORAGE = "attendance-ai-history";
+const API_KEY_STORAGE = "markit-ai-api-key";
+const HISTORY_STORAGE = "markit-ai-history";
 
 export default function AIAssistantPage() {
   const { apiFetch } = useApi();
@@ -222,7 +222,7 @@ export default function AIAssistantPage() {
               {messages.length === 0 && (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <Bot className="mb-4 h-12 w-12 text-gray-300" />
-                  <p className="text-lg font-medium text-gray-500">AI Attendance Assistant</p>
+                  <p className="text-lg font-medium text-gray-500">MarkIt AI Assistant</p>
                   <p className="mt-1 text-sm text-gray-400">
                     Ask questions about attendance data or use a prompt template to get started.
                   </p>

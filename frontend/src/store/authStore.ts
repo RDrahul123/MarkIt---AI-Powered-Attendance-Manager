@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
     }),
     {
-      name: "attendance-auth",
+      name: "markit-auth",
       partialize: (state) => ({
         user: state.user,
         token: state.token,

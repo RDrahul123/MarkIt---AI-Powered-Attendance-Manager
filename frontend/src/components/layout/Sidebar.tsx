@@ -49,7 +49,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-between px-4">
-            <span className="text-xl font-bold">Attendance Mgr</span>
+            <span className="text-xl font-bold">MarkIt</span>
             <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white">
               <X className="h-5 w-5" />
             </button>

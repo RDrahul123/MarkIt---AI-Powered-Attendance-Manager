@@ -25,7 +25,7 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) => set({ theme }),
     }),
     {
-      name: "attendance-app",
+      name: "markit-app",
     }
   )
 );

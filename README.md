@@ -1,8 +1,8 @@
 <div align="center">
 
-# Attendly
+# MarkIt
 
-### AI-Powered Attendance Manager
+### AI Powered Attendance Manager
 
 <br/>
 
@@ -21,7 +21,7 @@ A modern, full-stack web app for tracking student attendance with **Excel import
 
 <br/>
 
-![Attendly Banner](https://via.placeholder.com/800x400/3b82f6/ffffff?text=Attendly+-+AI+Attendance+Manager)
+![MarkIt Banner](https://via.placeholder.com/800x400/3b82f6/ffffff?text=MarkIt+-+AI+Attendance+Manager)
 
 </div>
 
@@ -174,7 +174,7 @@ A modern, full-stack web app for tracking student attendance with **Excel import
 ## Project Structure
 
 ```
-attendly/
+markit/
 ├── backend/                  # FastAPI API
 │   ├── app/
 │   │   ├── main.py          # App entry, CORS, lifespan
@@ -223,8 +223,8 @@ attendly/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/attendly.git
-cd attendly
+git clone https://github.com/YOUR_USERNAME/MarkIt---AI-Powered-Attendance-Manager.git
+cd MarkIt---AI-Powered-Attendance-Manager
 
 # Backend
 cd backend

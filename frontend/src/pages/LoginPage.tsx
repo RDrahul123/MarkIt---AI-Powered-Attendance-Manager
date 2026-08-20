@@ -54,7 +54,7 @@ export default function LoginPage() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
               <Lock className="h-6 w-6 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Attendance Manager</h1>
+            <h1 className="text-2xl font-bold text-gray-900">MarkIt</h1>
             <p className="mt-1 text-sm text-gray-500">Sign in to your account</p>
           </div>
 

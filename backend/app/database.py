@@ -8,7 +8,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     DATA_DIR = Path(__file__).resolve().parent.parent / "data"
     DATA_DIR.mkdir(exist_ok=True)
-    DATABASE_URL = f"sqlite+aiosqlite:///{DATA_DIR / 'attendance.db'}"
+    DATABASE_URL = f"sqlite+aiosqlite:///{DATA_DIR / 'markit.db'}"
 
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)

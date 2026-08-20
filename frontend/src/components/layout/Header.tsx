@@ -70,7 +70,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
         <button onClick={onMenuToggle} className="rounded-md p-1 text-gray-500 hover:text-gray-700 lg:hidden">
           <Menu className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-semibold text-gray-900 hidden sm:block">Attendance Manager</h1>
+        <h1 className="text-lg font-semibold text-gray-900 hidden sm:block">MarkIt</h1>
       </div>
 
       <div className="flex items-center gap-3">
